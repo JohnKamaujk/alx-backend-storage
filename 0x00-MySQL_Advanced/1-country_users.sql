@@ -1,4 +1,5 @@
 -- Creates a table with unique users & countries.
+
 DROP TABLE IF EXISTS users;
 CREATE TABLE users (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
