@@ -1,27 +1,46 @@
--- Creates a stored procedure ComputeAverageWeightedScoreForUsers
+-- Creates a stored procedure ComputeAverageWeightedScoreForUsers that
+-- computes and stores the average weighted score for all students.
+
+-- Drop the procedure if it already exists
 DROP PROCEDURE IF EXISTS ComputeAverageWeightedScoreForUsers;
+
+-- Change the delimiter for the CREATE PROCEDURE statement
 DELIMITER //
 
-CREATE PROCEDURE ComputeAverageWeightedScoreForUsers()
+-- Create the stored procedure
+CREATE PROCEDURE ComputeAverageWeightedScoreForUsers ()
 BEGIN
-    DECLARE total_weighted_score FLOAT;
-    DECLARE total_weight FLOAT;
+    -- Add new columns to store intermediate values
+    ALTER TABLE users ADD total_weighted_score INT NOT NULL;
+    ALTER TABLE users ADD total_weight INT NOT NULL;
 
-    -- Initialize variables
-    SET total_weighted_score = 0;
-    SET total_weight = 0;
+    -- Calculate the total weighted score for each user
+    UPDATE users
+        SET total_weighted_score = (
+            SELECT SUM(corrections.score * projects.weight)
+            FROM corrections
+            INNER JOIN projects ON corrections.project_id = projects.id
+            WHERE corrections.user_id = users.id
+        );
 
-    -- Calculate weighted average for each user
-    INSERT INTO users (average_score)
-    SELECT
-        u.id,
-        IFNULL(SUM(c.score * p.weight), 0) / IFNULL(SUM(p.weight), 1) AS weighted_average
-    FROM
-        users u
-    LEFT JOIN corrections c ON u.id = c.user_id
-    LEFT JOIN projects p ON c.project_id = p.id
-    GROUP BY
-        u.id;
+    -- Calculate the total weight for each user
+    UPDATE users
+        SET total_weight = (
+            SELECT SUM(projects.weight)
+            FROM corrections
+            INNER JOIN projects ON corrections.project_id = projects.id
+            WHERE corrections.user_id = users.id
+        );
 
-END //
+    -- Update the average_score using the calculated values
+    UPDATE users
+        SET users.average_score = IF(users.total_weight = 0, 0, users.total_weighted_score / users.total_weight);
+
+    -- Remove the intermediate columns
+    ALTER TABLE users DROP COLUMN total_weighted_score;
+    ALTER TABLE users DROP COLUMN total_weight;
+END;
+//
+
+-- Reset the delimiter to semicolon
 DELIMITER ;
