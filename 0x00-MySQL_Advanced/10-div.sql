@@ -7,12 +7,12 @@ CREATE FUNCTION SafeDiv(
     IN p_a INT,
     IN p_b INT
 )
-RETURNS INT
+RETURNS FLOAT DETERMINISTIC
 BEGIN
-    DECLARE result INT;
+    DECLARE result FLOAT;
 
     -- Compute the result
-    IF p_b == 0 THEN
+    IF p_b = 0 THEN
         SET result = 0;
     ELSE
         SET result = p_a / p_b;
