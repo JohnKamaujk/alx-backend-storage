@@ -7,9 +7,9 @@ CREATE FUNCTION SafeDiv(
     IN p_a INT,
     IN p_b INT
 )
-RETURNS FLOAT
+RETURNS INT
 BEGIN
-    DECLARE result FLOAT;
+    DECLARE result INT;
 
     -- Compute the result
     IF p_b == 0 THEN
