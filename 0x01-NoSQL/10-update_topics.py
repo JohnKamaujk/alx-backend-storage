@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-""" 10-module update topics module """
+""" 10-module update topics module"""
 
 
 def update_topics(mongo_collection, name, topics):
